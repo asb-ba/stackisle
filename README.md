@@ -9,6 +9,26 @@ Your isolated local island of services.
 
 The starting reference point is from the AEMaaCS.
 
+## Why Stackisle — one setup for every developer
+
+Every developer, in every team, runs the same stack as the cloud: AEM Author and Publish,
+the Dispatcher and HTTPS on the real site domains. What works on the developer machine
+works when the code is merged — no "works on my machine", no surprises in the shared cloud environments.
+
+- **Same setup for all** — one command (`make`) builds the identical environment on macOS,
+  Linux and Windows. New joiners are productive on day one, not in week two.
+- **Cloud-like, locally** — HTTPS domain → Dispatcher → Publish, the same path the visitor
+  takes. Caching, filters, rewrites and redirects are tested before the merge, not after the deploy.
+- **Cloud environments are limited** — AEMaaCS environments are few and shared; one per
+  developer is not cost-effective. Stackisle gives every developer a full stack of their own
+  at no cloud cost, and keeps the shared environments for integration and UAT.
+- **Faster delivery** — fewer failed pipelines, fewer blocked environments, fewer late defects.
+  Estimated **~40% productivity gain** for the overall team.
+- **Built for enterprise scale** — critical for complex projects with multiple teams, brands and
+  domains, delivered at true global scale, where everyone must build and test on the same baseline.
+
+**Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`.
+
 # AEM local DEV environment
 
 One-command setup for a fully local AEMaaCS development environment on macOS, Windows, and Linux.
