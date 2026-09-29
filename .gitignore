@@ -18,6 +18,7 @@ sdk/*
 /cache/
 /py/
 /aem.pid
+/docs/session-handoff.md
 
 # OS / IDE
 .DS_Store
