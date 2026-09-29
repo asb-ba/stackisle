@@ -1,0 +1,71 @@
+# ─────────────────────────────────────────────────────────────
+# stackisle — AEM local dev containers
+#
+#   Browser → https://<domain>
+#     [nginx]          INSTALL_DIR/certs  +  INSTALL_DIR/nginx/conf.d
+#       → http://aem-dispatcher:80          (host: localhost:${DISPATCHER_PORT})
+#         [dispatcher] INSTALL_DIR/dispatcher/src
+#           → http://host.docker.internal:${AEM_PUBLISH_PORT}   (AEM Publish, local Java)
+#
+# AEM Author/Publish run on the host (scripts/06-start-aem.sh).
+# Ports, domains and INSTALL_DIR come from .env. Host folders are derived from
+# INSTALL_DIR exactly as in scripts/lib/common.sh (make exports it as an absolute path).
+# DISPATCHER_IMAGE comes from ${DISPATCHER_DIR}/docker/image.env (written by
+# scripts/04-install-dispatcher.sh) — always start via make / scripts.
+# ─────────────────────────────────────────────────────────────
+
+name: stackisle
+
+networks:
+  aem-local-net:
+    name: aem-local-net
+
+volumes:
+  dispatcher-cache:
+    name: aem-dispatcher-cache
+
+services:
+
+  dispatcher:
+    image: ${DISPATCHER_IMAGE:-adobe/aem-cs/dispatcher-publish:latest}
+    container_name: aem-dispatcher
+    networks: [aem-local-net]
+    ports:
+      - "${DISPATCHER_PORT:-9999}:80"
+    # Mirrors the SDK's bin/docker_run.sh (same env + mounts), so config is
+    # applied exactly as on AEMaaCS. DISPATCHER_SDK_DIR comes from image.env.
+    environment:
+      AEM_HOST: host.docker.internal
+      AEM_PORT: "${AEM_PUBLISH_PORT:-4503}"
+      HOST_OS: "${HOST_OS:-Linux}"
+      ENVIRONMENT_TYPE: dev
+      DISP_LOG_LEVEL: "${DISP_LOG_LEVEL:-warn}"
+      REWRITE_LOG_LEVEL: "${REWRITE_LOG_LEVEL:-warn}"
+      ENABLE_MANAGED_REWRITE_MAPS_FLAG: "true"
+    volumes:
+      # Your vhost/farm config
+      - ${INSTALL_DIR:-./sdk}/dispatcher/src:/mnt/dev/src:ro
+      # SDK helpers — import_sdk_config.sh is what applies /mnt/dev/src at startup
+      - ${DISPATCHER_SDK_DIR:-./sdk/dispatcher-sdk}/lib:/usr/lib/dispatcher-sdk:ro
+      - ${DISPATCHER_SDK_DIR:-./sdk/dispatcher-sdk}/lib/import_sdk_config.sh:/docker_entrypoint.d/zzz-import-sdk-config.sh:ro
+      - ${DISPATCHER_SDK_DIR:-./sdk/dispatcher-sdk}/lib/dummy_gitinit_metadata.sh:/docker_entrypoint.d/zzz-overwrite_gitinit_metadata.sh:ro
+      # Dispatcher cache (named volume: no root-owned files on the host)
+      - dispatcher-cache:/mnt/var/www
+    # httpd/dispatcher log to stdout — `make logs-dispatcher` also saves them to ${DISPATCHER_DIR}/logs/
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  nginx:
+    image: ${NGINX_IMAGE:-nginx:1.27-alpine}
+    container_name: aem-nginx
+    networks: [aem-local-net]
+    depends_on: [dispatcher]
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      # host path (derived from INSTALL_DIR)  :  path inside the nginx container
+      - ${INSTALL_DIR:-./sdk}/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ${INSTALL_DIR:-./sdk}/certs:/etc/nginx/certs:ro
+    restart: unless-stopped

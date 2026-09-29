@@ -1,0 +1,140 @@
+# Stackisle
+Your isolated local island of services.
+- AEMaaCS
+- Magento (ACaaCS)
+- Docker
+- Kubernetes
+- Terraform
+...and more!
+
+The starting reference point is from the AEMaaCS.
+
+# AEM local DEV environment
+
+One-command setup for a fully local AEMaaCS development environment on macOS, Windows, and Linux.
+
+## What this sets up
+
+```
+Browser → https://dev-local-www-brand.com
+           [nginx container]        INSTALL_DIR/certs/server.crt, INSTALL_DIR/nginx/conf.d/
+             → aem-dispatcher:80    (host: http://localhost:9999)
+                [Dispatcher container]  INSTALL_DIR/dispatcher/src/
+                  → host.docker.internal:4503
+                     AEM Publish (local Java process)   AEM Author :4502 alongside
+```
+
+### Sites (via nginx SSL)
+
+Browse these — no port needed. nginx (Docker) terminates SSL and forwards to the
+dispatcher and AEM Publish behind it.
+
+| Site URL                              |
+|---------------------------------------|
+| https://dev-local-www-brand.com       |
+| https://dev-local-www-shop.brand.com  |
+| https://dev-local-www-b2b.brand.com   |
+| https://dev-local-www-new.brand.com   |
+
+One row per domain in `CUSTOM_DOMAINS` (`.env`). To add a site, see [Adding a domain](#adding-a-domain).
+
+### Backend services (direct access for development)
+
+| Service     | URL                    | Runs as                           |
+|-------------|------------------------|-----------------------------------|
+| AEM Author  | http://localhost:4502  | Java 21 process, `author,local` — admin/admin |
+| AEM Publish | http://localhost:4503  | Java 21 process, `publish,local`  |
+| Dispatcher  | http://localhost:9999  | Docker `aem-dispatcher` → Publish |
+
+## Prerequisites
+
+- Docker (Desktop on mac/windows) with compose v2, **Java 21+** (AEM SDK 2026.x refuses to start on 17), curl, unzip, openssl; mkcert optional (trusted certs)
+- `make install-prereq` installs them on mac/linux; Windows: `powershell -File prereq/windows/install-prereq.ps1` (Admin), then use Git Bash
+- The AEM SDK zip from [Adobe Software Distribution](https://experience.adobe.com/#/downloads) placed at `sdk/aem-sdk-<version>.zip`
+  (the dispatcher tools are inside it — nothing else to download)
+
+## Quick start
+
+First time? Follow **[docs/setup-guide.md](docs/setup-guide.md)**. It runs every step one at a
+time, with what each does, how to check it, and how to undo it.
+
+```bash
+cp .env.example .env     # optional — `make` creates it; edit CUSTOM_DOMAINS / ports
+make                     # prereq → sdk → certs → dispatcher → nginx → hosts → start → wait
+make help                # every target
+```
+
+## Where things are installed
+
+Two variables in `.env` decide everything:
+
+```bash
+SDK_DIR="./sdk"       # The path of the SDK container (put aem-sdk-<version>.zip here)
+INSTALL_DIR="./sdk"   # The path you want to install
+```
+
+| Derived from `INSTALL_DIR` | Contents |
+|---|---|
+| `author/`, `publish/` | AEM jars + `crx-quickstart` (repository, logs) |
+| `dispatcher/src/` | Dispatcher vhost/farm config (seeded from the SDK) |
+| `dispatcher/docker/`, `dispatcher/logs/` | Resolved image, saved logs |
+| `certs/` | `server.crt`, `server.key` |
+| `nginx/conf.d/` | Generated nginx server blocks |
+
+Relative paths resolve from the project folder; absolute paths (`/opt/aem`) and `~` work too.
+
+```bash
+make set-paths INSTALL_DIR=/opt/aem                  # change one…
+make set-paths SDK_DIR=./sdk INSTALL_DIR=~/aem-local # …or both (writes .env)
+make paths                                           # show the layout (read-only)
+make prereq                                          # check the folders are writable
+```
+Changing paths doesn't move an existing install. `set-paths` warns and explains the options.
+
+## Step-by-step
+
+| make target        | Script | What it does |
+|--------------------|--------|--------------|
+| `prereq`           | `00-check-prereq.sh` | Verify tools, Java 21+, Docker daemon, SDK zip |
+| `sdk`              | `01-unpack-sdk.sh`, `02-create-author-publish.sh` | Unpack SDK, create author/ + publish/ |
+| `certs`            | `03-create-cert.sh` | `certs/server.crt/.key` for all domains |
+| `dispatcher`       | `04-install-dispatcher.sh` | Dispatcher tools, seed `dispatcher/src`, load image |
+| `nginx`            | `05-create-nginx-config.sh` | `nginx/conf.d/<domain>.conf` |
+| `hosts`            | `update-etc-hosts.sh` | Map domains → 127.0.0.1 |
+| `start`            | `06`, `07`, `08` | Start AEM, dispatcher, nginx |
+| `health` / `wait`  | `09-health-check.sh` | Check every hop / poll until healthy |
+
+## Adding a domain
+
+```bash
+# .env
+CUSTOM_DOMAINS="dev-local-www-brand.com dev-local-www-shop.brand.com dev-local-www-b2b.brand.com dev-local-www-new.brand.com dev-local-www-promo.brand.com"
+
+make certs nginx hosts reload-nginx
+```
+The dispatcher's default config accepts every host (`*`), so no dispatcher change is
+needed. For per-domain vhosts, see `.claude/skills/references/dispatcher-config.md`.
+
+## Day to day
+
+```bash
+make start | stop | restart | health
+make stop-aem   # graceful: waits until the repository has closed — never force-kills
+make restart-aem
+make logs-author | logs-publish | logs-dispatcher | logs-nginx
+make clean      # remove generated certs/conf (keeps AEM + SDK)
+make uninstall  # revert everything: containers, images, hosts entries, AEM repos (asks)
+```
+
+## Extending
+
+Drop `mk/<stack>.mk` files in `mk/`. They're auto-included and appear in `make help`. See `mk/README.md`.
+
+**Magento (on hold):** a test stack lives in `scripts/magento/` (see its README). It's untested
+and not wired into `make`. Whether to use it, Warden or DDEV is still open; see
+`docs/session-handoff.md`.
+
+## Continuing on another machine
+
+Read `docs/session-handoff.md`: current state, decisions, open items and a macOS checklist.
+

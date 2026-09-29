@@ -1,0 +1,27 @@
+# Local config
+.env
+# Magento test stack config — holds repo.magento.com access keys
+scripts/magento/magento.env
+
+# SDK zip + anything installed under sdk/ (INSTALL_DIR="./sdk": author, publish,
+# certs, nginx, dispatcher, unpacked SDK) — can be GBs, never commit
+sdk/*
+!sdk/.gitkeep
+
+# Safety net: same generated folders if INSTALL_DIR is set to the project root (".")
+# and Adobe's validator cache if validate.sh is run from the root by hand
+/author/
+/publish/
+/certs/
+/nginx/
+/dispatcher/
+/cache/
+/py/
+
+# OS / IDE
+.DS_Store
+.idea/
+
+# Java
+*.class
+*.log
