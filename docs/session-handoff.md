@@ -2,14 +2,15 @@
 
 > For Claude and the user when continuing on a different machine.
 > Read this and `CLAUDE.md` (especially the **Working agreement**) before doing anything.
-> Last updated: 2026-09-29, after a full successful run on Linux (ARM64 / Ubuntu).
+> Last updated: 2026-09-29, after full successful runs on Linux (ARM64/Ubuntu) and macOS (Apple Silicon).
 
 ---
 
 ## Where we are
 
-**The AEM stack is working end to end on Linux (ARM64).** `make health` is all green,
-and every site domain was tested in the browser with the WKND content installed:
+**The AEM stack is working end to end on Linux (ARM64) and macOS (Apple Silicon).**
+`make health` is all green on both, and every site domain was tested in the browser
+with the WKND content installed:
 
 ```
 https://dev-local-www-{brand,shop.brand,b2b.brand,new.brand}.com   → aem-nginx (mkcert SSL)
@@ -17,12 +18,23 @@ https://dev-local-www-{brand,shop.brand,b2b.brand,new.brand}.com   → aem-nginx
     → AEM Publish :4503 (Java 21)        AEM Author :4502 (Java 21)
 ```
 
-The user ran every step by hand, following `docs/setup-guide.md` (steps 1–12).
-That guide is the reference for the macOS run.
+The Linux run was done by hand, step by step, following `docs/setup-guide.md`
+(steps 1–12). The macOS run was done twice: once step-by-step (`make sdk` →
+`make certs` → `make dispatcher` → `make nginx` → `make hosts` → `make start-aem`
+→ `make start-dispatcher` → `make start-nginx` → `make health`, each verified
+individually), then torn down with `make uninstall` and rebuilt from a clean
+`sdk/` (zip only) with the single `make` command — both paths reached
+"All services healthy."
 
 **Environment used on Linux:** SDK `aem-sdk-2026.9.28386.20260923T071724Z-260800`,
 dispatcher tools 2.0.275, OpenJDK 21, Docker 29 / Compose v5, mkcert via apt,
 `SDK_DIR="./sdk"`, `INSTALL_DIR="./sdk"`.
+
+**Environment used on macOS:** SDK `aem-sdk-2026.9.28386.20260923T071724Z-260900`,
+dispatcher tools 2.0.275 (arm64 image auto-detected correctly), Temurin 21 via
+Homebrew (already present), Docker Desktop 29.3.1 / Compose v5.1.1, mkcert 1.4.4
+(CA already trusted), `JAVA_HOME=""` (auto-detect via `/usr/libexec/java_home`
+worked, untested before this run), `SDK_DIR="./sdk"`, `INSTALL_DIR="./sdk"`.
 
 ---
 
@@ -45,10 +57,13 @@ dispatcher tools 2.0.275, OpenJDK 21, Docker 29 / Compose v5, mkcert via apt,
 
 ## Open items
 
-1. **macOS test run.** Next task; checklist below.
-2. **Git restore point.** The project isn't a git repo yet. Suggested: `git init`,
-   `git add .`, check `git status` (no `.env`, nothing under `sdk/` except `.gitkeep`),
-   then commit.
+1. ~~**macOS test run.**~~ **Done 2026-09-29** — see checklist below, all green,
+   both step-by-step and single-`make` paths verified.
+2. ~~**Git restore point.**~~ **Done** — project is now a git repo (`main` branch).
+   Note: an `aem.pid` file was accidentally committed during the Linux session;
+   it has been removed and `/aem.pid` added to `.gitignore` as a safety net
+   (the real PID files live under `sdk/author/aem.pid` and `sdk/publish/aem.pid`,
+   already covered by the `sdk/*` ignore rule).
 3. **Magento: on hold.** Options discussed: Warden, DDEV, or the custom scripts in
    `scripts/magento/`. Those scripts are **untested and not wired into make**;
    the user hasn't decided whether to keep them. The key constraint: Warden's
