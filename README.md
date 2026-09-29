@@ -50,8 +50,8 @@ One row per domain in `CUSTOM_DOMAINS` (`.env`). To add a site, see [Adding a do
 
 - Docker (Desktop on mac/windows) with compose v2, **Java 21+** (AEM SDK 2026.x refuses to start on 17), curl, unzip, openssl; mkcert optional (trusted certs)
 - `make install-prereq` installs them on mac/linux; Windows: `powershell -File prereq/windows/install-prereq.ps1` (Admin), then use Git Bash
-- The AEM SDK zip from [Adobe Software Distribution](https://experience.adobe.com/#/downloads) placed at `sdk/aem-sdk-<version>.zip`
-  (the dispatcher tools are inside it — nothing else to download)
+- The AEM SDK zip from [Adobe Software Distribution](https://experience.adobe.com/#/downloads/content/software-distribution/en/aemcloud.html) | [direct-link](https://experience.adobe.com/#/downloads/bin/softwaredistribution/package/download.file/aem-sdk-2026.9.28386.20260923T071724Z-260900.zip?path=%2Fcontent%2Fdam%2Faemcloud%2Fpublic%2Faem-sdk-2026.9.28386.20260923T071724Z-260900.zip&generatedtoken=7F2xijOFSKMvQj7DCuUFAKKIZOYa_mxNVSizeivZFWn7D9HcUobz_D2vFtM2d3SaX7LNARlIuCHGrurHIdDTpVbcFzd1pgXjB1yxU7bmwbuAOhTYsof25dmMjAezoe4-ypDK034i2pkRPO3apwZbiUoNcp1miNFGUwHGLYTDNtT1tcfVWvnJ6jeOZUas3SFhDCvY0A5fkQDdN6DyigKb1D9sailPpZnfgOWkLhs44tMuCMdFDkQEVG0ux0CYSsyH) placed at `sdk/aem-sdk-<version>.zip`
+  (you should have access and the dispatcher tools are inside it — nothing else to download)
 
 ## Quick start
 
