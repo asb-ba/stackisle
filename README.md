@@ -93,16 +93,23 @@ Changing paths doesn't move an existing install. `set-paths` warns and explains 
 
 ## Step-by-step
 
-| make target        | Script | What it does |
-|--------------------|--------|--------------|
-| `prereq`           | `00-check-prereq.sh` | Verify tools, Java 21+, Docker daemon, SDK zip |
-| `sdk`              | `01-unpack-sdk.sh`, `02-create-author-publish.sh` | Unpack SDK, create author/ + publish/ |
-| `certs`            | `03-create-cert.sh` | `certs/server.crt/.key` for all domains |
-| `dispatcher`       | `04-install-dispatcher.sh` | Dispatcher tools, seed `dispatcher/src`, load image |
-| `nginx`            | `05-create-nginx-config.sh` | `nginx/conf.d/<domain>.conf` |
-| `hosts`            | `update-etc-hosts.sh` | Map domains → 127.0.0.1 |
-| `start`            | `06`, `07`, `08` | Start AEM, dispatcher, nginx |
-| `health` / `wait`  | `09-health-check.sh` | Check every hop / poll until healthy |
+| make target       | Script                                            | What it does                                        |
+|-------------------|---------------------------------------------------|-----------------------------------------------------|
+| `help`            | `help.sh`                                         | List all targets                                    |
+| `env`             | `set-paths`                                       | Create .env file and set paths                      |
+| `prereq`          | `00-check-prereq.sh`                              | Verify tools, Java 21+, Docker daemon, SDK zip      |
+| `sdk`             | `01-unpack-sdk.sh`, `02-create-author-publish.sh` | Unpack SDK, create author/ + publish/               |
+| `certs`           | `03-create-cert.sh`                               | `certs/server.crt/.key` for all domains             |
+| `dispatcher`      | `04-install-dispatcher.sh`                        | Dispatcher tools, seed `dispatcher/src`, load image |
+| `nginx`           | `05-create-nginx-config.sh`                       | `nginx/conf.d/<domain>.conf`                        |
+| `hosts`           | `update-etc-hosts.sh`                             | Map domains → 127.0.0.1                             |
+| `start`           | `06`, `07`, `08`                                  | Start AEM, dispatcher, nginx                        |
+| `health` / `wait` | `09-health-check.sh`                              | Check every hop / poll until healthy                |
+| `make`            | `all above command`                               | One command to install and start all above services |                              
+| `stop`            | `10-stop-aem.sh`                                  | Graceful stops all services                         |
+
+# Refer detailed step by step command guide
+from [./docs/setup-guide.md](./docs/setup-guide.md)
 
 ## Adding a domain
 
@@ -127,14 +134,4 @@ make uninstall  # revert everything: containers, images, hosts entries, AEM repo
 ```
 
 ## Extending
-
-Drop `mk/<stack>.mk` files in `mk/`. They're auto-included and appear in `make help`. See `mk/README.md`.
-
-**Magento (on hold):** a test stack lives in `scripts/magento/` (see its README). It's untested
-and not wired into `make`. Whether to use it, Warden or DDEV is still open; see
-`docs/session-handoff.md`.
-
-## Continuing on another machine
-
-Read `docs/session-handoff.md`: current state, decisions, open items and a macOS checklist.
-
+**Magento (on hold):** - TODO
