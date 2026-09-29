@@ -27,7 +27,7 @@ works when the code is merged — no "works on my machine", no surprises in the 
 - **Built for enterprise scale** — critical for complex projects with multiple teams, brands and
   domains, delivered at true global scale, where everyone must build and test on the same baseline.
 
-**Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`. An opportunity to enhance and make it your own playbook.
+**Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`. An opportunity to enhance and make it your own playbook by partnering with the [Claude.ai skills](./.claude/skills/SKILL.md).
 
 # AEM local DEV environment
 
