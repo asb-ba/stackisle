@@ -106,7 +106,7 @@ Changing paths doesn't move an existing install. `set-paths` warns and explains 
 | `start`           | `06`, `07`, `08`                                  | Start AEM, dispatcher, nginx                        |
 | `health` / `wait` | `09-health-check.sh`                              | Check every hop / poll until healthy                |
 | `make`            | `all above command`                               | One command to install and start all above services |                              
-| `stop`            | `10-stop-aem.sh`                                  | Graceful stops all services                         |
+| `stop`            | `Stop all services`                               | Graceful stops all services                         |
 
 # Refer detailed step by step command guide
 from [./docs/setup-guide.md](./docs/setup-guide.md)
