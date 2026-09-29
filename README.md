@@ -11,7 +11,7 @@ The starting reference point is from the AEMaaCS.
 
 ## Why Stackisle — one setup for every developer
 
-Every developer, in every team, runs the same stack as the cloud: AEM Author and Publish,
+Every developer, in every team, runs the same stack as the cloud ie AEM Author and Publish,
 the Dispatcher and HTTPS on the real site domains. What works on the developer machine
 works when the code is merged — no "works on my machine", no surprises in the shared cloud environments.
 
@@ -27,7 +27,7 @@ works when the code is merged — no "works on my machine", no surprises in the 
 - **Built for enterprise scale** — critical for complex projects with multiple teams, brands and
   domains, delivered at true global scale, where everyone must build and test on the same baseline.
 
-**Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`.
+**Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`. An opportunity to enhance and make it your own playbook.
 
 # AEM local DEV environment
 
