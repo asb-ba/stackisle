@@ -11,6 +11,8 @@ The starting reference point is from the AEMaaCS.
 
 ## Why Stackisle — one setup for every developer.
 
+Goal is one command setup.
+
 Every developer, in every team, runs the same stack as the cloud ie AEM Author and Publish,
 the Dispatcher and HTTPS on the real site domains. What works on the developer machine
 works when the code is merged — no "works on my machine", no surprises in the shared cloud environments.
