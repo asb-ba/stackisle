@@ -11,7 +11,7 @@ The starting reference point is from the AEMaaCS.
 
 ## Why Stackisle — one setup for every developer.
 
-Goal is one command setup.
+Goal is one command setup (sdk, SSL, dispatcher, nginx and all).
 
 Every developer, in every team, runs the same stack as the cloud ie AEM Author and Publish,
 the Dispatcher and HTTPS on the real site domains. What works on the developer machine
