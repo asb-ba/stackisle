@@ -29,6 +29,13 @@ works when the code is merged — no "works on my machine", no surprises in the 
 
 **Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`. An opportunity to enhance and make it your own playbook by partnering with the [Claude.ai skills](./.claude/skills/SKILL.md).
 
+# Command preview
+`make prereq`
+![img.png](img.png)
+
+`make health`
+![img_1.png](img_1.png)
+
 # AEM local DEV environment
 
 One-command setup for a fully local AEMaaCS development environment on macOS, Windows, and Linux.
