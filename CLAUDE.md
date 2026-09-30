@@ -3,18 +3,6 @@
 > Claude reads this on every session. Follow every convention here without
 > being asked. Read the relevant reference file before answering AEM questions.
 
-## Working agreement (applies on every machine)
-
-- **The user runs every command.** Claude guides step by step, explains what each
-  step does, how to check it and how to undo it, and edits scripts/docs — but does
-  not execute setup, test or verification commands (not even in a scratch copy).
-  When something must be checked, give the exact command and what to look for,
-  then wait for the pasted output.
-- One step at a time; flag anything that changes the system (sudo, hosts file,
-  Docker images, ports) before the user runs it.
-- **Continuing from another machine?** Read `docs/session-handoff.md` first —
-  it holds the current state, decisions and open items.
-
 ## What this project is
 
 A cross-platform, one-command local developer environment for **Adobe Experience
