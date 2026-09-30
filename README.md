@@ -9,7 +9,7 @@ Your isolated local island of services.
 
 The starting reference point is from the AEMaaCS.
 
-## Why Stackisle — one setup for every developer
+## Why Stackisle — one setup for every developer.
 
 Every developer, in every team, runs the same stack as the cloud ie AEM Author and Publish,
 the Dispatcher and HTTPS on the real site domains. What works on the developer machine
