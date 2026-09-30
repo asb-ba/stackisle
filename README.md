@@ -11,6 +11,8 @@ The starting reference point is from the AEMaaCS.
 
 ## Why Stackisle — one setup for every developer.
 
+Goal is one command setup.
+
 Every developer, in every team, runs the same stack as the cloud ie AEM Author and Publish,
 the Dispatcher and HTTPS on the real site domains. What works on the developer machine
 works when the code is merged — no "works on my machine", no surprises in the shared cloud environments.
@@ -28,6 +30,16 @@ works when the code is merged — no "works on my machine", no surprises in the 
   domains, delivered at true global scale, where everyone must build and test on the same baseline.
 
 **Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`. An opportunity to enhance and make it your own playbook by partnering with the [Claude.ai skills](./.claude/skills/SKILL.md).
+
+# Command preview
+`make prereq`
+![img.png](img.png)
+
+`make health`
+![img_1.png](img_1.png)
+
+`https://dev-local-www-brand.com`
+![img_2.png](img_2.png)
 
 # AEM local DEV environment
 
