@@ -62,6 +62,28 @@ fi
 # 0 = no limit (default). Set seconds only for unattended use (e.g. CI) — on timeout
 # stop just reports and exits non-zero; AEM keeps shutting down on its own.
 : "${AEM_STOP_TIMEOUT:=0}"
+: "${AEM_ADMIN_USER:=admin}"
+: "${AEM_ADMIN_PASSWORD:=admin}"
+
+# ── URLs — built only from .env values, never hardcoded in scripts ──
+# LOCAL_HOSTNAME   how this machine reaches Author/Publish/Dispatcher
+# SMOKE_PATH       page used for end-to-end checks (make smoke / health / wknd)
+# AEM_LOGIN_PATH   page that answers 200 once AEM is up (readiness)
+# HOSTS_IP         IP the CUSTOM_DOMAINS map to in the hosts file (and in the cert SANs)
+: "${LOCAL_HOSTNAME:=localhost}"
+: "${HOSTS_IP:=127.0.0.1}"
+: "${SMOKE_PATH:=/content/wknd/us/en.html}"
+: "${AEM_LOGIN_PATH:=/libs/granite/core/content/login.html}"
+: "${WKND_REPO:=adobe/aem-guides-wknd}"
+HOSTS_IP_RE="${HOSTS_IP//./\\.}"                          # for grep -E
+
+AUTHOR_URL="http://${LOCAL_HOSTNAME}:${AEM_AUTHOR_PORT}"
+PUBLISH_URL="http://${LOCAL_HOSTNAME}:${AEM_PUBLISH_PORT}"
+DISPATCHER_URL="http://${LOCAL_HOSTNAME}:${DISPATCHER_PORT}"
+# Port suffix only when nginx isn't on the standard port (URLs stay portless by default)
+HTTPS_SUFFIX=""; [[ "$NGINX_HTTPS_PORT" != "443" ]] && HTTPS_SUFFIX=":${NGINX_HTTPS_PORT}"
+site_url() { echo "https://${1}${HTTPS_SUFFIX}"; }        # site_url <domain>
+FIRST_DOMAIN="${CUSTOM_DOMAINS%% *}"
 
 
 # ── Install paths (override in .env) ─────────────────────────
@@ -118,6 +140,10 @@ detect_os() {
 }
 OS="$(detect_os)"
 
+# System hosts file for this OS (used by update-etc-hosts.sh, health check, Magento)
+HOSTS_FILE=/etc/hosts
+[[ "$OS" == "windows" ]] && HOSTS_FILE=/c/Windows/System32/drivers/etc/hosts
+
 # sudo is not available in Git Bash on Windows (run the shell as Admin instead)
 as_root() {
   if [[ "$OS" == "windows" || "$(id -u 2>/dev/null)" == "0" ]]; then "$@"; else sudo "$@"; fi
@@ -125,8 +151,8 @@ as_root() {
 
 # ── Ports / HTTP ─────────────────────────────────────────────
 # Pure-bash TCP probe — no lsof/netstat needed (works on mac/linux/Git Bash)
-port_open() {
-  (exec 3<>"/dev/tcp/${2:-127.0.0.1}/$1") 2>/dev/null
+port_open() {  # port_open <port> [host]  (host defaults to LOCAL_HOSTNAME from .env)
+  (exec 3<>"/dev/tcp/${2:-$LOCAL_HOSTNAME}/$1") 2>/dev/null
 }
 
 # Prints the HTTP status code (000 when unreachable)
@@ -141,35 +167,6 @@ java_major() {
   [[ "$v" == 1.* ]] && v="${v#1.}"
   echo "${v%%.*}"
 }
-
-# JAVA_HOME blank in .env and the default `java` too old (or missing)?
-# Pick an installed JDK >= JAVA_REQUIRED automatically, per OS:
-#   mac:   /usr/libexec/java_home -v <N>   (Temurin/Oracle/Zulu installs)
-#   linux: /usr/lib/jvm/java-<N>-openjdk-* (apt/dnf installs), newest first
-# Only affects this project's scripts (exported for their child processes).
-auto_java_home() {
-  [[ -z "${JAVA_HOME:-}" ]] || return 0
-  local cur; cur="$(java_major 2>/dev/null)"
-  [[ "$cur" =~ ^[0-9]+$ && "$cur" -ge "$JAVA_REQUIRED" ]] && return 0
-  local cand="" d
-  case "$OS" in
-    mac)
-      cand="$(/usr/libexec/java_home -v "${JAVA_REQUIRED}+" 2>/dev/null \
-           || /usr/libexec/java_home -v "${JAVA_REQUIRED}" 2>/dev/null)" ;;
-    linux)
-      for d in $(ls -d /usr/lib/jvm/java-*-openjdk* /usr/lib/jvm/jdk-* 2>/dev/null | sort -rV); do
-        [[ -x "$d/bin/java" ]] || continue
-        local v; v="$("$d/bin/java" -version 2>&1 | awk -F '"' '/version/ {print $2; exit}')"
-        v="${v#1.}"; v="${v%%.*}"
-        [[ "$v" =~ ^[0-9]+$ && "$v" -ge "$JAVA_REQUIRED" ]] && { cand="$d"; break; }
-      done ;;
-  esac
-  if [[ -n "$cand" && -x "$cand/bin/java" ]]; then
-    export JAVA_HOME="$cand"
-    export PATH="$JAVA_HOME/bin:$PATH"
-  fi
-}
-auto_java_home
 
 # ── SDK globbing — never hardcode version strings ────────────
 sdk_zip()      { find -L "$SDK_DIR" -maxdepth 1 -type f -name "aem-sdk*.zip" 2>/dev/null | sort | tail -n 1; }

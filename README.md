@@ -9,9 +9,7 @@ Your isolated local island of services.
 
 The starting reference point is from the AEMaaCS.
 
-## Why Stackisle — one setup for every developer.
-
-Goal is one command setup (sdk, SSL, dispatcher, nginx and all).
+## Why Stackisle — one setup for every developer
 
 Every developer, in every team, runs the same stack as the cloud ie AEM Author and Publish,
 the Dispatcher and HTTPS on the real site domains. What works on the developer machine
@@ -31,15 +29,29 @@ works when the code is merged — no "works on my machine", no surprises in the 
 
 **Start here** — Stackisle is the starting point for every project to clone, add to it own repo as needed and the SDK, run `make`. An opportunity to enhance and make it your own playbook by partnering with the [Claude.ai skills](./.claude/skills/SKILL.md).
 
-# Command preview
+# Preview 
+**MacOS**
+
 `make prereq`
-![img.png](img.png)
+
+![precheck.png](precheck.png)
 
 `make health`
-![img_1.png](img_1.png)
+
+![health.png](health.png)
+
+**Linux**
+
+`pre-check` 
+
+![img_2.png](img_2.png)
+
+`make health`
+
+![img.png](img.png)
 
 `https://dev-local-www-brand.com`
-![img_2.png](img_2.png)
+![screen.png](screen.png)
 
 # AEM local DEV environment
 
@@ -82,7 +94,8 @@ One row per domain in `CUSTOM_DOMAINS` (`.env`). To add a site, see [Adding a do
 
 - Docker (Desktop on mac/windows) with compose v2, **Java 21+** (AEM SDK 2026.x refuses to start on 17), curl, unzip, openssl; mkcert optional (trusted certs)
 - `make install-prereq` installs them on mac/linux; Windows: `powershell -File prereq/windows/install-prereq.ps1` (Admin), then use Git Bash
-- The AEM SDK zip from [Adobe Software Distribution](https://experience.adobe.com/#/downloads/content/software-distribution/en/aemcloud.html) | [direct-link](https://experience.adobe.com/#/downloads/bin/softwaredistribution/package/download.file/aem-sdk-2026.9.28386.20260923T071724Z-260900.zip?path=%2Fcontent%2Fdam%2Faemcloud%2Fpublic%2Faem-sdk-2026.9.28386.20260923T071724Z-260900.zip&generatedtoken=7F2xijOFSKMvQj7DCuUFAKKIZOYa_mxNVSizeivZFWn7D9HcUobz_D2vFtM2d3SaX7LNARlIuCHGrurHIdDTpVbcFzd1pgXjB1yxU7bmwbuAOhTYsof25dmMjAezoe4-ypDK034i2pkRPO3apwZbiUoNcp1miNFGUwHGLYTDNtT1tcfVWvnJ6jeOZUas3SFhDCvY0A5fkQDdN6DyigKb1D9sailPpZnfgOWkLhs44tMuCMdFDkQEVG0ux0CYSsyH) placed at `sdk/aem-sdk-<version>.zip`
+- The AEM SDK zip from [Adobe Software Distribution](https://experience.adobe.com/#/downloads/content/software-distribution/en/aemcloud.html)
+  (sign in with your Adobe ID; search "AEM SDK"), placed at `sdk/aem-sdk-<version>.zip`
   (you should have access and the dispatcher tools are inside it — nothing else to download)
 
 ## Quick start
@@ -127,8 +140,9 @@ Changing paths doesn't move an existing install. `set-paths` warns and explains 
 
 | make target       | Script                                            | What it does                                        |
 |-------------------|---------------------------------------------------|-----------------------------------------------------|
-| `help`            | `help.sh`                                         | List all targets                                    |
-| `env`             | `set-paths`                                       | Create .env file and set paths                      |
+| `help`            | built into `Makefile`                             | List all targets                                    |
+| `env`             | built into `Makefile`                             | Create `.env` from `.env.example` (if missing)      |
+| `set-paths`       | `set-paths.sh`                                    | Set `SDK_DIR` / `INSTALL_DIR` in `.env`             |
 | `prereq`          | `00-check-prereq.sh`                              | Verify tools, Java 21+, Docker daemon, SDK zip      |
 | `sdk`             | `01-unpack-sdk.sh`, `02-create-author-publish.sh` | Unpack SDK, create author/ + publish/               |
 | `certs`           | `03-create-cert.sh`                               | `certs/server.crt/.key` for all domains             |
@@ -137,8 +151,8 @@ Changing paths doesn't move an existing install. `set-paths` warns and explains 
 | `hosts`           | `update-etc-hosts.sh`                             | Map domains → 127.0.0.1                             |
 | `start`           | `06`, `07`, `08`                                  | Start AEM, dispatcher, nginx                        |
 | `health` / `wait` | `09-health-check.sh`                              | Check every hop / poll until healthy                |
-| `make`            | `all above command`                               | One command to install and start all above services |                              
-| `stop`            | `Stop all services`                               | Graceful stops all services                         |
+| `make`            | all of the above                                  | One command to install and start all above services |
+| `stop`            | `08`, `07`, `06` (stop)                           | Graceful stop of all services                       |
 
 # Refer detailed step by step command guide
 from [./docs/setup-guide.md](./docs/setup-guide.md)
@@ -158,12 +172,26 @@ needed. For per-domain vhosts, see `.claude/skills/references/dispatcher-config.
 
 ```bash
 make start | stop | restart | health
+make urls       # every URL of your setup (built from .env — nothing hardcoded)
+make smoke      # test SMOKE_PATH on every hop, printing the exact curl used
 make stop-aem   # graceful: waits until the repository has closed — never force-kills
 make restart-aem
 make logs-author | logs-publish | logs-dispatcher | logs-nginx
 make clean      # remove generated certs/conf (keeps AEM + SDK)
 make uninstall  # revert everything: containers, images, hosts entries, AEM repos (asks)
 ```
+
+## Sample content (optional): WKND
+
+```bash
+make wknd                  # install Adobe's WKND site on Author + Publish (AEM running)
+make start-aem WKND=1      # start AEM, wait until ready, then install WKND
+make WKND=1                # full setup including WKND
+FORCE=1 make wknd          # reinstall
+```
+Latest release from the GitHub repo in `WKND_REPO` (default `adobe/aem-guides-wknd`), or pin
+`WKND_VERSION` in `.env`. Skips instances where it's already installed. Then run `make smoke`:
+it tests `SMOKE_PATH` (default the WKND home page) on every hop and site.
 
 ## Extending
 **Magento (on hold):** - TODO
