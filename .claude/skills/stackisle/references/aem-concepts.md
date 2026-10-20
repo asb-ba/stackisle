@@ -1,6 +1,6 @@
 # AEM Concepts Reference
 
-> Loaded by the aem-local-dev skill when answering architecture or AEM-specific questions.
+> Loaded by the stackisle skill when answering architecture or AEM-specific questions.
 
 ## AEMaaCS vs AEM 6.x
 
@@ -78,8 +78,9 @@ public class MyModelImpl implements MyModel {
 ```
 
 Sling models live in `core/src/main/java`. They are adapted from `Resource`
-or `SlingHttpServletRequest`. Always use `DefaultInjectionStrategy.OPTIONAL`
-to avoid NPEs when properties are missing.
+or `SlingHttpServletRequest`. Use `DefaultInjectionStrategy.OPTIONAL` unless a
+property is truly required: with the default (required) strategy, one missing
+property makes the whole model fail to adapt.
 
 ## HTL (Sightly) templates
 
@@ -150,6 +151,8 @@ cd ui.frontend && npm run dev
 ```
 
 ## Useful AEM URLs (local)
+
+These use the default ports and first domain. `make urls` prints the user's real ones.
 
 ```
 # Author

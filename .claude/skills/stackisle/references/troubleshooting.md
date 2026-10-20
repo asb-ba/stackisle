@@ -2,8 +2,8 @@
 
 > Loaded by the stackisle skill when the user reports an error or something
 > isn't working. Work through the relevant section top to bottom.
-> **The user runs every command** — give the command and what to look for,
-> then wait for the pasted output (see CLAUDE.md, Working agreement).
+> **The user runs every command.** Give the command and what to look for,
+> then wait for the pasted output (see the working agreement in `AGENTS.md`).
 >
 > Paths below assume the defaults `SDK_DIR="./sdk"` and `INSTALL_DIR="./sdk"`.
 > `make paths` shows the real locations.
@@ -58,7 +58,7 @@ Very old SDKs ship the tools separately. Put the `-unix.sh` into `sdk/aem-sdk-*/
 - mac/windows: start Docker Desktop.
 - linux: `sudo systemctl start docker`; for permission, `sudo usermod -aG docker $USER`,
   then **log out and back in** (`newgrp docker` works for one terminal only). The group
-  change doesn't apply to sessions that were already open, Claude Code included.
+  change doesn't apply to sessions that were already open, including the agent's own terminal.
 
 ### `make health`: "Docker CLI cannot reach the daemon from this shell", but the sites work
 The containers are fine. This **shell** can't talk to Docker. Most often it's
@@ -80,8 +80,8 @@ grep -oE 'adobe/[a-z-]+/dispatcher-publish[^ "]*' sdk/dispatcher-sdk-*/bin/docke
 
 ### Dispatcher ignores my `dispatcher/src` changes
 The config is applied at container start by Adobe's `import_sdk_config.sh` hook.
-`docker-compose.yml` mounts it, mirroring `bin/docker_run.sh`. After editing
-`sdk/dispatcher/src`: `make dispatcher-validate`, then `make stop-dispatcher start-dispatcher`.
+`docker-compose.yml` mounts it, mirroring `bin/docker_run.sh`. Check `make paths`:
+edits must be in the active `DISPATCHER_SRC_DIR`. After editing: `make dispatcher-validate`, then `make stop-dispatcher start-dispatcher`.
 
 ### `aem-dispatcher` container exiting / restarting
 ```bash
@@ -164,7 +164,8 @@ bash scripts/06-start-aem.sh status   # is it our instance?
 make stop-aem                         # graceful
 ss -ltnp | grep ':4502'               # (mac: lsof -nP -iTCP:4502 -sTCP:LISTEN) something else?
 ```
-Don't `kill -9` an AEM process. Stop it gracefully.
+Stop AEM gracefully with `make stop-aem`, never `kill -9`: a hard kill can corrupt the
+Oak repository and indexes.
 
 ### `make stop-aem` takes long
 That's expected on large repositories or during reindexing. It sends SIGTERM
@@ -206,7 +207,7 @@ make certs nginx hosts reload-nginx  # 03 regenerates when CUSTOM_DOMAINS change
 ### Domain does not resolve
 ```bash
 grep stackisle /etc/hosts
-make hosts
+make hosts                     # no sudo? make browser-no-admin (Chrome/Edge only)
 getent hosts dev-local-www-brand.com            # linux
 dscacheutil -q host -a name dev-local-www-brand.com   # mac
 ```
