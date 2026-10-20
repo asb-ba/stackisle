@@ -45,7 +45,7 @@ else
   echo -e "  ${SKIP} Already installed."
 fi
 
-# ── 2. Java 17 ───────────────────────────────────────────────
+# ── 2. Java (JAVA_REQUIRED, default 21) ─────────────────────────────────────────
 echo ""
 echo -e "  ${BOLD}[2/4] Java ${JREQ}+${RESET}"
 JV=$(java -version 2>&1 | awk -F '"' '/version/ {print $2; exit}' | sed 's/^1\.//' | cut -d. -f1)

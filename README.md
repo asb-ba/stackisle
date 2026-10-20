@@ -11,7 +11,7 @@
 Windows. Your isolated local island of services.
 
 - **AEMaaCS** — AEM Author + Publish, Dispatcher, nginx SSL, real site domains *(available now)*
-- Magento (ACaaCS), Docker, Kubernetes, Terraform ...and more — planned stacks, see [Extending](#extending)
+- Docker, Kubernetes, Terraform ...and more — planned stacks, see [Extending](#extending)
 
 The starting reference point is AEMaaCS — clone this repo, drop in your AEM SDK, run `make`.
 
@@ -218,8 +218,6 @@ it tests `SMOKE_PATH` (default the WKND home page) on every hop and site.
 
 New stacks go in `mk/<stack>.mk` and are auto-included by the Makefile — no edits to the
 core `Makefile` needed.
-
-**Magento (ACaaCS):** on hold, untested, not yet wired into `make`.
 
 ## Contributing
 
