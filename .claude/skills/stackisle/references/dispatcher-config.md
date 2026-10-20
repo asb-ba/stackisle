@@ -2,18 +2,21 @@
 
 > Loaded by the stackisle skill when the user wants to edit dispatcher config:
 > vhosts, farms, cache rules, rewrites, or allowed/denied URLs.
-> The user runs every command (see CLAUDE.md, Working agreement).
+> The user runs every command (see the working agreement in `AGENTS.md`).
 
 ## Config location
 
-`INSTALL_DIR/dispatcher/src/` (default `sdk/dispatcher/src/`), seeded by
-`make dispatcher` from `SDK_DIR/dispatcher-sdk-X.Y.Z/src/`. It's mounted at
+`DISPATCHER_SRC_DIR`. Default: `INSTALL_DIR/dispatcher/src/` (`sdk/dispatcher/src/`),
+seeded by `make dispatcher` from `SDK_DIR/dispatcher-sdk-X.Y.Z/src/`. If the user set
+`DISPATCHER_SRC_DIR` in `.env` to their own repo's `dispatcher/src`, edit that instead;
+it is never seeded or deleted. `make paths` shows which one is active. Paths below assume
+the default. It's mounted at
 `/mnt/dev/src` in `aem-dispatcher` and applied at container start by Adobe's
 `import_sdk_config.sh` hook (mounted by `docker-compose.yml`, mirroring `bin/docker_run.sh`).
 
-> `sdk/` is gitignored, so changes here aren't version-controlled. For real
-> projects, keep the dispatcher config in the AEM project repo (open decision,
-> see `docs/session-handoff.md`).
+> `sdk/` is gitignored, so changes in the default location are not version-controlled.
+> To keep the config in the AEM project repo, point `DISPATCHER_SRC_DIR` at it. If
+> `docs/session-handoff.md` exists on this machine, it may record a decision on this.
 
 The seeded config uses **flexible mode**: `opt-in/USE_SOURCES_DIRECTLY` is present,
 so the validator runs `validator full -relaxed`.
