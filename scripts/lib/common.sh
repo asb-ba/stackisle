@@ -150,7 +150,7 @@ detect_os() {
 }
 OS="$(detect_os)"
 
-# System hosts file for this OS (used by update-etc-hosts.sh, health check, Magento)
+# System hosts file for this OS (used by update-etc-hosts.sh and the health check)
 HOSTS_FILE=/etc/hosts
 [[ "$OS" == "windows" ]] && HOSTS_FILE=/c/Windows/System32/drivers/etc/hosts
 

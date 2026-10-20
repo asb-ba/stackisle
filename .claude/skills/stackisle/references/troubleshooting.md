@@ -170,7 +170,7 @@ Oak repository and indexes.
 ### `make stop-aem` takes long
 That's expected on large repositories or during reindexing. It sends SIGTERM
 and waits until the JVM exits, with no timeout by default and never `kill -9`.
-Watch it: `tail -f sdk/author/crx-quickstart/logs/error.log`. Ctrl+C only stops
+Watch it: `make logs-author` (or `make logs-publish`). Ctrl+C only stops
 the waiting; AEM keeps shutting down cleanly.
 
 ### AEM boots but login page shows 404 / 503
