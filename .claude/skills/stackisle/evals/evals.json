@@ -1,0 +1,114 @@
+{
+  "skill_name": "stackisle",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "`make start` hangs and Publish never answers on 4503. What do I do?",
+      "expected_output": "Gives commands for the user to run, uses make health and make logs-publish, never suggests kill -9.",
+      "files": [],
+      "expectations": [
+        "The response gives commands for the user to run rather than running them itself",
+        "The response uses `make health` to check the services",
+        "The response uses `make logs-publish` to read the Publish log",
+        "The response never suggests `kill -9`"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add a fifth domain, dev-local-www-blog.brand.com.",
+      "expected_output": "Edits CUSTOM_DOMAINS in .env, then make certs FORCE=1, make nginx, make hosts. No hardcoded domain in scripts.",
+      "files": [],
+      "expectations": [
+        "The response edits `CUSTOM_DOMAINS` in `.env` to add the domain",
+        "The response runs `make certs FORCE=1` after the edit",
+        "The response runs `make nginx` after the edit",
+        "The response runs `make hosts` after the edit",
+        "The response does not hardcode the domain in any script"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I have no sudo on this laptop. How do I reach the sites?",
+      "expected_output": "make browser-no-admin, Chrome or Edge only, Safari still needs make hosts.",
+      "files": [],
+      "expectations": [
+        "The response recommends `make browser-no-admin`",
+        "The response says it works with Chrome or Edge only",
+        "The response says Safari still needs `make hosts`"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Use my project repo's dispatcher/src instead of the seeded one.",
+      "expected_output": "Sets DISPATCHER_SRC_DIR, says the directory must already exist, says uninstall never deletes it.",
+      "files": [],
+      "expectations": [
+        "The response sets `DISPATCHER_SRC_DIR`",
+        "The response says the directory must already exist",
+        "The response says uninstall never deletes it"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "AEM will not stop. Can I just kill -9 it?",
+      "expected_output": "Refuses, explains Oak repository damage, offers make stop-aem, which waits with no timeout.",
+      "files": [],
+      "expectations": [
+        "The response refuses `kill -9`",
+        "The response explains the risk of Oak repository damage",
+        "The response offers `make stop-aem`",
+        "The response says `make stop-aem` waits with no timeout"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Add a Redis stack to make.",
+      "expected_output": "mk/redis.mk auto-included, sources scripts/lib/common.sh, covers mac, linux and windows.",
+      "files": [],
+      "expectations": [
+        "The response puts the stack in `mk/redis.mk`, auto-included by the Makefile",
+        "The response's scripts source `scripts/lib/common.sh`",
+        "The response covers mac, linux and windows"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I have Java 17. Will the quickstart run?",
+      "expected_output": "No, Java 21+ required, JAVA_REQUIRED in .env.",
+      "files": [],
+      "expectations": [
+        "The response says no, the quickstart will not run on Java 17",
+        "The response says Java 21+ is required",
+        "The response names `JAVA_REQUIRED` in `.env`"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Set up the Magento test stack.",
+      "expected_output": "Says the stack was removed, invents no script.",
+      "files": [],
+      "expectations": [
+        "The response says the Magento stack was removed",
+        "The response invents no script"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Write a Python function that dedupes a list, keeping order.",
+      "expected_output": "No-trigger: no AEM content.",
+      "files": [],
+      "expectations": [
+        "The response contains no AEM content"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Explain git rebase versus merge.",
+      "expected_output": "No-trigger: no AEM content.",
+      "files": [],
+      "expectations": [
+        "The response contains no AEM content"
+      ]
+    }
+  ]
+}
