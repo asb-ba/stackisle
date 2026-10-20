@@ -17,6 +17,11 @@ command, and you hand over the exact command and what to look for.
 Done means the user has the next command to run, knows what success looks like, and
 knows how to undo it. Stop and wait for pasted output before the step after.
 
+The answer itself carries the result. Put the file change, the `make` commands and every
+caveat from the matching common task below in the reply. A fact you read but left out does
+not reach the user. If an edit is denied or not yours to make, show the change and say
+where it goes instead of stopping at "blocked".
+
 ## Make targets
 
 `make help` lists every target. `make` alone runs the full flow:
@@ -44,8 +49,11 @@ make health                           # every hop: AEM, containers, dispatcher, 
 bash scripts/06-start-aem.sh status   # real java PIDs, adopts instances started by hand
 make paths                            # where SDK_DIR / INSTALL_DIR resolve
 java -version                         # must be >= JAVA_REQUIRED (21)
+make logs-publish                     # or logs-author: tails the running instance's error.log
 ```
 
+Use `make logs-author` and `make logs-publish` for AEM logs rather than a `tail` on a
+literal path. They find the instance from its PID, wherever `INSTALL_DIR` points.
 Then `make smoke` to see which hop fails. For errors, read `references/troubleshooting.md`.
 
 ## Scripts
@@ -98,26 +106,32 @@ config edits, read `references/dispatcher-config.md`.
 
 ## Common tasks
 
-**Add or change a domain.** Edit `CUSTOM_DOMAINS` in `.env` (space-separated). Then
-`make certs FORCE=1`, `make nginx`, `make hosts` (or `make browser-no-admin`), and
-`make reload-nginx`. No script changes: scripts read the domains from `.env`.
+**Add or change a domain.** The change is one line in the user's `.env`: add the domain to
+`CUSTOM_DOMAINS` (space-separated). `make env` creates `.env` from `.env.example` if it is
+missing. Leave the default in `scripts/lib/common.sh` and `.env.example` alone, because a
+domain there is hardcoded in a script. Then the user runs `make certs FORCE=1`,
+`make nginx`, `make hosts` (or `make browser-no-admin`) and `make reload-nginx`.
 
 **No sudo for the hosts file.** `make browser-no-admin` opens the sites in a throwaway
-Chrome or Edge window that maps each domain with `--host-resolver-rules`. Only that window
-sees the mapping. Safari has no equivalent, and curl and other browsers still need
-`make hosts`.
+Chrome or Edge window that maps each domain with `--host-resolver-rules`. Tell the user
+three things: it works in Chrome or Edge only, only that window sees the mapping, and
+Safari, Firefox and curl still need `make hosts`.
 
-**Use the user's own dispatcher config.** Set `DISPATCHER_SRC_DIR` in `.env` to an
-existing `dispatcher/src` (rules in `AGENTS.md`), then `make dispatcher-validate` and
-`make stop-dispatcher start-dispatcher`.
+**Use the user's own dispatcher config.** Set `DISPATCHER_SRC_DIR` in `.env` to the
+checkout's `dispatcher/src`, then `make dispatcher-validate` and
+`make stop-dispatcher start-dispatcher`. Tell the user the directory must already exist,
+because `make dispatcher` never creates or seeds it, and that `make uninstall` never
+deletes it.
 
-**AEM will not stop.** `make stop-aem` waits until the JVM exits, with no timeout. Watch
-`make logs-author` (or `logs-publish`). Ctrl+C stops only the waiting. Never offer a force kill.
+**AEM will not stop.** Tell the user to run `make stop-aem`. It sends SIGTERM and waits
+until the JVM exits, with no timeout. Watch `make logs-author` (or `logs-publish`).
+Ctrl+C stops only the waiting. Never offer a force kill, for the reason in `AGENTS.md`.
 
 **Add a stack to make.** Create `mk/<stack>.mk` with `## ` comments on its targets so
-they show in `make help`. Put logic in a script under `scripts/` that sources
-`scripts/lib/common.sh`, and cover macOS, Linux and Windows. Hook it into the main flow
-only when the user asks, for example `all: <stack>-start`.
+they show in `make help`; the Makefile auto-includes `mk/*.mk`. Put logic in a script
+under `scripts/` that sources `scripts/lib/common.sh`. Say in the answer how macOS, Linux
+and Windows (Git Bash, Docker Desktop) are each handled. Hook it into the main flow only
+when the user asks, for example `all: <stack>-start`.
 
 ## Platform prereqs
 

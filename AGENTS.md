@@ -51,8 +51,9 @@ explain why.
 ## Conventions
 
 - **Java 21+** (`JAVA_REQUIRED=21` in `.env`). The AEM SDK 2026.x quickstart refuses
-  to start on Java 17. Never suggest a lower version. If a future SDK needs more, raise
-  `JAVA_REQUIRED`; scripts and installers follow it.
+  to start on Java 17. Never suggest a lower version. When the user asks about a Java
+  version, name the floor and where it lives: `JAVA_REQUIRED` in `.env`. If a future SDK
+  needs more, raise `JAVA_REQUIRED`; scripts and installers follow it.
 - **JVM opts:** never add `-XX:MaxPermSize`. The JVM refuses to start with it.
 - **Never hardcode SDK version strings.** Glob for `aem-sdk*.zip`, `aem-sdk-*/` and
   `dispatcher-sdk-*/`; `scripts/lib/common.sh` has the glob functions.

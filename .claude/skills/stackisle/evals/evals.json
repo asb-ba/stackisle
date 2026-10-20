@@ -85,10 +85,10 @@
     {
       "id": 8,
       "prompt": "Set up the Magento test stack.",
-      "expected_output": "Says the stack was removed, invents no script.",
+      "expected_output": "Says this repo has no Magento stack, invents no script.",
       "files": [],
       "expectations": [
-        "The response says the Magento stack was removed",
+        "The response says this repo has no Magento stack",
         "The response invents no script"
       ]
     },
