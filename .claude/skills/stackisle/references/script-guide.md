@@ -25,7 +25,7 @@ its own (`bash scripts/NN-*.sh`) from any directory.
 | `.env` loading | `set -a; source .env` — quoted values OK. Empty `JAVA_HOME` is unset; a set one is prepended to `PATH` |
 | Defaults | `CUSTOM_DOMAINS`, ports, run modes, `AEM_JVM_OPTS`, `DISPATCHER_PORT=9999`, `CERT_NAME=server`, `JAVA_REQUIRED=21`, `HEALTH_TIMEOUT=900`, `AEM_STOP_TIMEOUT=0` (no limit — stop waits until AEM has exited), `SDK_DIR=./sdk`, `INSTALL_DIR=./sdk` |
 | `JAVA_HOME` | Blank → `java` on PATH; set → prepended to `PATH`. No auto-detection — `00` fails with a hint if the version is below `JAVA_REQUIRED` |
-| Paths | Only `SDK_DIR` and `INSTALL_DIR` come from `.env` (made absolute by `abs_path`: relative → project root, `~` → `$HOME`). Derived, not configurable: `AUTHOR_DIR` `PUBLISH_DIR` `DISPATCHER_DIR` `DISPATCHER_SRC_DIR` `CERTS_DIR` `NGINX_CONF_DIR` (all under `INSTALL_DIR`). Exported for compose; `$INSTALL_PATH_VARS` lists them |
+| Paths | `SDK_DIR` and `INSTALL_DIR` come from `.env` (made absolute by `abs_path`: relative → project root, `~` → `$HOME`). Derived from `INSTALL_DIR`: `AUTHOR_DIR` `PUBLISH_DIR` `DISPATCHER_DIR` `CERTS_DIR` `NGINX_CONF_DIR`. `DISPATCHER_SRC_DIR` is the one optional override: blank → `DISPATCHER_DIR/src`, set → an existing directory (made absolute). Exported for compose; `$INSTALL_PATH_VARS` lists them |
 | `rel <path>` | Shortens a path for messages (relative when inside the project) |
 | URLs | From `.env` only: `LOCAL_HOSTNAME`, `HOSTS_IP` (+ `HOSTS_IP_RE`), `SMOKE_PATH`, `AEM_LOGIN_PATH`, `AEM_ADMIN_USER/PASSWORD`, `WKND_REPO`. Derived: `AUTHOR_URL`, `PUBLISH_URL`, `DISPATCHER_URL`, `HTTPS_SUFFIX`, `site_url <domain>`, `FIRST_DOMAIN`. `HOSTS_FILE` per OS. **Never hardcode a host, IP, port or path in a script** |
 | `CERT_FILE` / `KEY_FILE` | `${CERTS_DIR}/${CERT_NAME}.crt` / `.key` |
@@ -35,7 +35,8 @@ its own (`bash scripts/NN-*.sh`) from any directory.
 | `OS` / `as_root` | `mac`/`linux`/`windows`; `as_root` = sudo except Git Bash/root |
 | `port_open <port> [host]` | Pure-bash `/dev/tcp` probe (no lsof) |
 | `http_code <curl args>` | Prints status, `000` if unreachable |
-| `java_major` | Handles `1.8` and `21.0.x` formats || `sdk_zip` `sdk_dir` `quickstart_jar` `dispatcher_tools_sh` `dispatcher_sdk_dir` | Globs under `SDK_DIR` (`find -L`, follows symlinks) — never hardcode versions |
+| `java_major` | Handles `1.8` and `21.0.x` formats |
+| `sdk_zip` `sdk_dir` `quickstart_jar` `dispatcher_tools_sh` `dispatcher_sdk_dir` | Globs under `SDK_DIR` (`find -L`, follows symlinks) — never hardcode versions |
 | `author_jar` `publish_jar` | `${AUTHOR_DIR}/aem-author-p<port>.jar` etc. |
 | `find_java_pid <jar>` | PID of a running `java … -jar <jar's basename>` anywhere on the machine, not tied to `INSTALL_DIR` |
 | `proc_cwd <pid>` | Working directory of a PID — `/proc/<pid>/cwd` on Linux, `lsof`'s `cwd` fd entry on macOS |
@@ -75,7 +76,8 @@ Writes `INSTALL_DIR/certs/.server.sans`; regenerates only when domains change or
 
 ## 04-install-dispatcher.sh
 1. Runs `aem-sdk-dispatcher-tools-*-unix.sh` inside `SDK_DIR` → `SDK_DIR/dispatcher-sdk-X.Y.Z/`
-2. Seeds `INSTALL_DIR/dispatcher/src/` from the SDK's `src/` **only if empty**
+2. Default `DISPATCHER_SRC_DIR`: seeds it from the SDK's `src/` **only if empty**. Custom
+   `DISPATCHER_SRC_DIR`: fails if it does not exist, otherwise uses it as-is (never seeds or modifies it)
 3. Image: `DISPATCHER_IMAGE` from `.env`, else `docker load` of the SDK's
    `*dispatcher-publish*<arch>*.tar*`, else grep of `docker_run.sh`.
    Saved with `DISPATCHER_SDK_DIR` to `${INSTALL_DIR}/dispatcher/docker/image.env`, consumed by `compose()`.
@@ -89,9 +91,8 @@ Deletes previously generated files (marker line), then writes:
   `proxy_pass http://aem-dispatcher:80`, `Host $host`, `X-Forwarded-Proto https`
 
 Paths are **container** paths — `docker-compose.yml` mounts `${INSTALL_DIR}/certs` and
-`${INSTALL_DIR}/nginx/conf.d`; each file carries `# host: …` comments. Other stacks may add
-their own files there with their own marker (e.g. Magento's `zz-magento-*.conf`) — 05 only
-deletes files carrying its own marker.
+`${INSTALL_DIR}/nginx/conf.d`; each file carries `# host: …` comments. 05 only deletes files
+carrying its own marker, so a stack in `mk/` can add its own conf files there with its own marker.
 
 ## 06-start-aem.sh `[start|stop|status] [author|publish|all]`
 ```bash
@@ -138,9 +139,9 @@ dispatcher `localhost:9999` answers (not 000/5xx) · every
 1. Graceful AEM stop — **aborts** (removes nothing) if AEM is still shutting down.
 2. Validator cache (via the dispatcher image if root-owned) — before images are removed.
 3. `compose down --rmi all --volumes`, removes `aem-local-net`.
-4. Hosts lines tagged `# stackisle` (Magento's `# stackisle-magento` untouched).
+4. Hosts lines tagged exactly `# stackisle` (other tags untouched).
 5. Instances, unpacked SDK, `server.crt/.key`, 05-marked nginx conf, image ref, dispatcher log.
-6. `dispatcher/src` only if identical to the SDK default.
+6. `DISPATCHER_SRC_DIR` contents only if identical to the SDK default.
 
 Deletes named items only, never whole configurable directories. Keeps the SDK zip,
 `.env`, sources. Never removes system packages (prints how).
@@ -170,10 +171,17 @@ the line if it's missing. Creates `.env` from the example if needed. Prints the 
 layout and warns if an existing install or SDK zip stays in the old location.
 Never moves files.
 
-## update-etc-hosts.sh `[add|remove]`
-Adds `127.0.0.1<TAB><domain><TAB># stackisle` per domain (exact-match check),
-flushes DNS. `remove` deletes only tagged lines. Windows path:
+## update-etc-hosts.sh `[add|remove]`  (make hosts · make hosts-remove)
+Adds `HOSTS_IP<TAB><domain><TAB># stackisle` per domain (exact-match check),
+flushes DNS. `remove` deletes only tagged lines. Needs sudo. Windows path:
 `/c/Windows/System32/drivers/etc/hosts` (Git Bash as Administrator).
+
+## open-browser-no-admin.sh  (make browser-no-admin)
+Admin-free alternative to `make hosts`. Finds Chrome or Edge and opens every site in a
+throwaway profile (under `INSTALL_DIR`) with `--host-resolver-rules` mapping each domain to
+`HOSTS_IP`. No sudo, no hosts file. Only that window sees the mapping: other windows,
+other browsers and curl still need `make hosts` (or `curl --resolve`). Safari (WebKit) has
+no equivalent flag, so Safari users need `make hosts`.
 
 ---
 
@@ -184,5 +192,22 @@ flushes DNS. `remove` deletes only tagged lines. Windows path:
 - `dispatcher-validate` runs Adobe's `validate.sh` from `INSTALL_DIR/dispatcher` because its
   `docker_run.sh` bind-mounts `${PWD}/cache`; the folder is pre-created as the user so Docker
   doesn't create it root-owned. `uninstall` removes it (via the dispatcher image if files are root-owned).
-- Extension: `-include mk/*.mk`. Add `mk/<stack>.mk` with `##` comments; hook into
-  the main flow with e.g. `all: magento-start`. See `mk/README.md`.
+- Extension: `-include mk/*.mk`. A new stack adds `mk/<stack>.mk` (the `mk/` directory is
+  created with the first one) with `## ` comments so its targets show in `make help`.
+  Hook it into the main flow only when asked, e.g. `all: <stack>-start`.
+
+---
+
+## Changing a script
+
+1. Read the script and `scripts/lib/common.sh` first.
+2. Source `scripts/lib/common.sh`; reuse its helpers, globs and derived paths.
+3. Generated files go under `INSTALL_DIR` via the derived variables (`CERTS_DIR`,
+   `NGINX_CONF_DIR`, `DISPATCHER_*`), never literal paths and never the project root.
+4. Keep each script runnable on its own where possible.
+5. macOS runs bash 3.2: no bash-4 features, no `/proc` (use `ps -ww`), no `ss`, `getent`
+   or GNU `ls --time-style`. If the change needs a new tool, update all three
+   `prereq/<os>/` installers.
+6. Update the Makefile target if the script's inputs or outputs change.
+7. Hand the user the command to test it (`bash -x scripts/NN-name.sh` for a trace) and
+   wait for the pasted output.

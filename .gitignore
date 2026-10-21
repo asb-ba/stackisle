@@ -1,7 +1,5 @@
 # Local config
 .env
-# Magento test stack config — holds repo.magento.com access keys
-scripts/magento/magento.env
 
 # SDK zip + anything installed under sdk/ (INSTALL_DIR="./sdk": author, publish,
 # certs, nginx, dispatcher, unpacked SDK) — can be GBs, never commit

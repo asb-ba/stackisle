@@ -63,7 +63,7 @@ install-prereq: ## Run the platform prereq installer (mac/linux; Windows → Pow
 	  *) echo "Windows: run in Admin PowerShell → powershell -File prereq/windows/install-prereq.ps1"; exit 1 ;; \
 	esac
 
-prereq: ## 00 Verify Java 17+, Docker, compose, tools, SDK zip
+prereq: ## 00 Verify Java 21+, Docker, compose, tools, SDK zip
 	@bash $(S)/00-check-prereq.sh
 
 ##@ Setup
@@ -194,5 +194,5 @@ clean: ## Stop containers, remove generated certs/nginx conf/image ref (keeps AE
 uninstall: ## Revert everything make created: containers, images, hosts entries, AEM repos (asks)
 	@bash $(S)/uninstall.sh
 
-# ── Extension point: additional stacks (magento.mk, k8s.mk, ...) ──
+# ── Extension point: additional stacks (k8s.mk, terraform.mk, ...) ──
 -include mk/*.mk
